@@ -10,7 +10,9 @@ Bare-repo layout becomes a first-class option in `install.sh`, the
 layout YAML, and every lifecycle template. v0.1.x sibling-mode
 consumers (notably `bbe-sprint-machine` v0.1.0 / T-040) keep working
 unchanged — all v0.2.0 changes are additive on top of the v0.1.x
-codepath.
+codepath. v0.2.0 also ships an NPM wrapper so the toolkit is
+installable via `npx @bbe-dbe/worktree-toolkit init` without
+cloning.
 
 ### Added
 
@@ -44,6 +46,25 @@ codepath.
   --layout-bare-on-non-bare refusal, bare-mode setup path
   resolution, status `--info`, idempotency, structural match
   against v0.1.x templates, and the cleanup defensive guard.
+- **NPM wrapper** (T-051). Toolkit installable via
+  `npx @bbe-dbe/worktree-toolkit init` without cloning. The wrapper
+  is a thin Node.js bin (`bin/bbe-worktree.js`) that exec's
+  `install.sh` inside the installed package, so the scaffolder
+  remains the single source of truth. Subcommands: `init` / `check`
+  / `uninstall` / `version` / `help`. Bin names: `bbe-worktree`
+  and `worktree-toolkit`.
+- `package.json` declares the `@bbe-dbe/worktree-toolkit` package
+  with a whitelist `files` field that ships only `install.sh`,
+  `VERSION`, `templates/`, `bin/`, `LICENSE`, `README.md`,
+  `CHANGELOG.md`, and `PATTERN.md`. `tests/`, `docs/`, and `.git*`
+  are excluded from the tarball.
+- `tests/test-npm-wrapper.sh` — 14 checks covering help/version/
+  unknown exit codes, init forwarding, idempotency through the
+  wrapper, the `--layout-dir` pass-through, `npm pack` tarball
+  contents, and a full extract-then-init round-trip from the
+  packed tarball.
+- `README.md` — npx quickstart section (clone path retained for
+  existing consumers).
 
 ### Changed
 
@@ -126,8 +147,9 @@ is purely additive.
   templates are untouched and the migration tool is explicitly
   marked experimental, so v0.1.x continues until v0.2.0 promotes
   bare-repo layout to first-class.
-- v0.2.0 will drop the `--i-understand-the-risk` gate and add
-  `install.sh --bare` for fresh bare-repo installs.
+- v0.2.0 keeps the `--i-understand-the-risk` gate (announced as
+  "will drop in v0.2.0" by v0.1.1, retained deliberately — see the
+  `[0.2.0]` Soft decisions section).
 
 ## [0.1.0] — 2026-05-02
 

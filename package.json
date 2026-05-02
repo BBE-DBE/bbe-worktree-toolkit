@@ -1,0 +1,51 @@
+{
+  "name": "@bbe-dbe/worktree-toolkit",
+  "version": "0.2.0",
+  "description": "Plug-and-play scaffolding that turns any git repository into a multi-agent-friendly workspace using per-agent git worktrees. NPM wrapper around install.sh — same toolkit, npx-installable.",
+  "license": "MIT",
+  "homepage": "https://github.com/BBE-DBE/bbe-worktree-toolkit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BBE-DBE/bbe-worktree-toolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BBE-DBE/bbe-worktree-toolkit/issues"
+  },
+  "keywords": [
+    "git",
+    "git-worktree",
+    "worktree",
+    "scaffolding",
+    "monorepo",
+    "multi-agent",
+    "doctrine",
+    "bbe-dbe"
+  ],
+  "author": "BBE-DBE",
+  "bin": {
+    "bbe-worktree": "./bin/bbe-worktree.js",
+    "worktree-toolkit": "./bin/bbe-worktree.js"
+  },
+  "files": [
+    "bin/",
+    "install.sh",
+    "VERSION",
+    "templates/",
+    "PATTERN.md",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "bash tests/run-all.sh",
+    "test:wrapper": "bash tests/test-npm-wrapper.sh",
+    "pack:dry": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "linux",
+    "darwin"
+  ]
+}

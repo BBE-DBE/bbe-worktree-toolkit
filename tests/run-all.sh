@@ -9,7 +9,8 @@ for test_script in \
   tests/test-setup.sh \
   tests/test-cleanup.sh \
   tests/test-migrate-to-bare.sh \
-  tests/test-bare-mode.sh
+  tests/test-bare-mode.sh \
+  tests/test-npm-wrapper.sh
 do
   if bash "$test_script"; then
     :
