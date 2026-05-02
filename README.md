@@ -28,12 +28,12 @@ formal.
 
 ## Install
 
+### Via npx (recommended, no clone required)
+
 From inside the repository you want to scaffold:
 
 ```bash
-git clone https://github.com/BBE-DBE/bbe-worktree-toolkit.git ~/.bbe-worktree-toolkit
-cd /path/to/your/repo
-~/.bbe-worktree-toolkit/install.sh
+npx @bbe-dbe/worktree-toolkit init
 ```
 
 That creates `.worktrees/WORKTREE_LAYOUT.yaml`, drops the three scripts
@@ -42,31 +42,52 @@ That creates `.worktrees/WORKTREE_LAYOUT.yaml`, drops the three scripts
 `.worktrees/DOCTRINE.yaml` plus `DOCTRINE_RATIONALE.md` — appends the
 required rule and its rationale.
 
-A second `install.sh` run is a safe no-op.
+A second `npx ... init` run is a safe no-op.
 
-For a different layout dir (e.g. bbe-coord uses `.bbe-coord/`):
+For a different layout dir (e.g. `bbe-coord` uses `.bbe-coord/`):
 
 ```bash
-~/.bbe-worktree-toolkit/install.sh --layout-dir .bbe-coord
+npx @bbe-dbe/worktree-toolkit init --layout-dir .bbe-coord
 ```
+
+Other npx subcommands:
+
+```bash
+npx @bbe-dbe/worktree-toolkit check       # report install state
+npx @bbe-dbe/worktree-toolkit uninstall   # remove toolkit-managed files
+npx @bbe-dbe/worktree-toolkit version     # print package + toolkit versions
+```
+
+### Via git clone (always supported)
+
+```bash
+git clone https://github.com/BBE-DBE/bbe-worktree-toolkit.git ~/.bbe-worktree-toolkit
+cd /path/to/your/repo
+~/.bbe-worktree-toolkit/install.sh
+```
+
+The npm wrapper is a thin shell around `install.sh` — both code paths
+land at the same scaffolder. Existing clone-based installs continue to
+work unchanged.
 
 ### Bare-repo layout (v0.2.0+)
 
-The toolkit now supports two layouts:
+The toolkit supports two layouts; install.sh auto-detects:
 
 | Mode | Disk shape | When to pick |
 |---|---|---|
 | **sibling** (default) | `<repo>/.git` is a regular checkout; worktrees live at `<parent>/<repo>-worktrees/<track>-<task_id>/` | Existing repos, ad-hoc setups, simplest mental model |
 | **bare** | `<repo>/.bare/` is the bare clone; `<repo>/.git` is a pointer file; every worktree (including `main/`) is a peer at `<repo>/<rel>/` | Many parallel worktrees, no distinguished "primary" checkout |
 
-Auto-detection is the default: install.sh inspects the target repo
-and picks the right mode. To force one or the other:
+To force one or the other (works with both clone and npx paths):
 
 ```bash
 ~/.bbe-worktree-toolkit/install.sh --layout sibling
 ~/.bbe-worktree-toolkit/install.sh --layout bare      # requires the
                                                       # repo to already
                                                       # be in bare layout
+# npx equivalent:
+npx @bbe-dbe/worktree-toolkit init -- --layout bare
 ```
 
 To convert a sibling repo to bare layout, use
