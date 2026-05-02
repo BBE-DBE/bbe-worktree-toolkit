@@ -57,12 +57,56 @@ repo_root() {
   git rev-parse --show-toplevel
 }
 
+# bare_root — the parent directory of the bare git dir (.bare/) when
+# the repo is in bare layout. In sibling layout this returns the same
+# value as repo_root, so callers that don't care about the distinction
+# get a sensible default.
+bare_root() {
+  local common
+  common="$(git rev-parse --git-common-dir 2>/dev/null || true)"
+  if [[ -z "$common" ]]; then
+    repo_root
+    return
+  fi
+  if [[ "$common" != /* ]]; then
+    common="$(cd "$(repo_root)" && cd "$(dirname "$common")" 2>/dev/null && pwd)/$(basename "$common")"
+  fi
+  if [[ "$(basename "$common")" == ".bare" ]]; then
+    dirname "$common"
+  else
+    repo_root
+  fi
+}
+
+# layout_mode_value — read .layout_mode from YAML, default to sibling
+# for v0.1.x layouts that pre-date the field.
+layout_mode_value() {
+  local m
+  m="$(yq -r '.layout_mode // ""' "$LAYOUT_FILE" 2>/dev/null || printf '')"
+  if [[ -z "$m" || "$m" == "null" ]]; then
+    printf 'sibling'
+  else
+    printf '%s' "$m"
+  fi
+}
+
+# layout_root — anchor for resolving relative base_path.
+#   sibling: repo_root (the regular git checkout)
+#   bare:    bare_root (parent of .bare/)
+layout_root() {
+  if [[ "$(layout_mode_value)" == "bare" ]]; then
+    bare_root
+  else
+    repo_root
+  fi
+}
+
 resolve_path() {
   local p="$1"
   if [[ "$p" = /* ]]; then
     printf '%s' "$p"
   else
-    printf '%s/%s' "$(repo_root)" "$p"
+    printf '%s/%s' "$(layout_root)" "$p"
   fi
 }
 

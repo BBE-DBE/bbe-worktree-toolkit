@@ -13,8 +13,31 @@
 _toolkit_version: "{{TOOLKIT_VERSION}}"
 _repo_name: "{{REPO_NAME}}"
 
+# Layout mode — how the working trees are arranged on disk. Set by
+# install.sh based on the target repo (auto-detection) or the
+# operator's --layout flag.
+#
+#   sibling  Default. The main repo is a regular checkout at
+#            <repo_root>; worktrees live at <base_path>/<track>-<task_id>
+#            (typically a sibling directory like ../<repo>-worktrees/).
+#            This is the v0.1.x layout and remains the toolkit default.
+#
+#   bare     The repo is a bare clone at <repo_root>/.bare/ with a
+#            pointer file at <repo_root>/.git. Worktrees (including
+#            "main") are direct children of <repo_root>. Use this when
+#            you want every checkout to be a peer worktree without a
+#            distinguished primary checkout. Bootstrap from a sibling
+#            layout via scripts/migrate-to-bare.sh.
+#
+# Lifecycle scripts read this field. When the field is absent (a
+# v0.1.x install upgraded in place), they default to sibling for
+# backwards compatibility.
+layout_mode: "{{LAYOUT_MODE}}"
+
 # Where new worktrees are created. Relative paths are resolved from
 # the repository root.
+#   sibling: typically ../<repo>-worktrees
+#   bare:    typically "." (worktrees are siblings of .bare/)
 base_path: "{{BASE_PATH}}"
 
 # Path pattern for individual worktrees. Available substitutions:

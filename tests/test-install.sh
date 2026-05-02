@@ -54,8 +54,11 @@ check_install_substitutes_tokens() {
   if grep -rE '\{\{[A-Z_]+\}\}' "$sandbox/repo/.worktrees" >/dev/null 2>&1; then
     return 1
   fi
-  # Layout file mentions the substituted toolkit version.
-  grep -q '_toolkit_version: "0.1.0"' "$sandbox/repo/.worktrees/WORKTREE_LAYOUT.yaml"
+  # Layout file mentions the substituted toolkit version (read dynamically
+  # from VERSION so this test stays correct across bumps).
+  local v
+  v="$(cat "$toolkit_dir/VERSION")"
+  grep -Fq "_toolkit_version: \"$v\"" "$sandbox/repo/.worktrees/WORKTREE_LAYOUT.yaml"
 }
 
 check_install_is_idempotent() {

@@ -7,7 +7,9 @@ failures=0
 for test_script in \
   tests/test-install.sh \
   tests/test-setup.sh \
-  tests/test-cleanup.sh
+  tests/test-cleanup.sh \
+  tests/test-migrate-to-bare.sh \
+  tests/test-bare-mode.sh
 do
   if bash "$test_script"; then
     :

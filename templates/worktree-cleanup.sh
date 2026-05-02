@@ -69,7 +69,17 @@ scan_one() {
   local path="$1"
   local branch="$2"
   if [[ -z "$path" ]]; then return; fi
+  # Skip the current worktree (where this script is running from).
   if [[ "$path" == "$(git rev-parse --show-toplevel)" ]]; then
+    return
+  fi
+  # Defensive guard for bare layout: never flag a peer worktree on
+  # the default branch (main / master) as removable, even if the
+  # branch passes the merged-to-origin/main check. In sibling layout
+  # the main repo is always the current worktree (skipped above), so
+  # this guard is a no-op there. In bare layout it prevents cleanup-
+  # from-feature-worktree from removing the main/ peer.
+  if [[ "$branch" == "main" || "$branch" == "master" ]]; then
     return
   fi
   local reason=""
