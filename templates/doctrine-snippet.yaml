@@ -1,0 +1,62 @@
+# bbe-worktree-toolkit — DOCTRINE-Snippet
+#
+# install.sh appends the YAML block below to a target repo's
+# DOCTRINE.yaml under `mandatory_for_every_sprint:`. The
+# `# >>> bbe-worktree-toolkit ... <<<` markers delimit the appended
+# region so a future install can detect prior installation and so the
+# operator can locate the block for manual edits.
+#
+# install.sh appends the markdown block below to DOCTRINE_RATIONALE.md
+# under the matching anchor. Same marker convention.
+#
+# Both blocks are append-only and idempotent: install.sh greps for the
+# marker before writing.
+
+mandatory_rule: |
+  # >>> bbe-worktree-toolkit T-030 BEGIN — DOCTRINE rule <<<
+  worktree_isolation_required:
+    rule: "Multi-Agent-Sprints arbeiten in separaten git worktrees"
+    enforcement: doctrine_hard_block
+    rationale_ref: worktree_isolation
+    check: "git worktree list zeigt mindestens einen Sprint-Worktree wenn ≥2 parallele Agenten aktiv"
+    enforcement_phase:
+      - "active_since_toolkit_v0.1.0"
+      - "solo_sprint_exemption: bei 1-Agent / 1-Branch-Sprints kann die Regel via 'doctrine_exempt: solo_sprint' im PR-Body umgangen werden"
+  # >>> bbe-worktree-toolkit T-030 END — DOCTRINE rule <<<
+
+rationale_md: |
+  <!-- >>> bbe-worktree-toolkit T-030 BEGIN — RATIONALE anchor <<< -->
+
+  ## worktree_isolation
+
+  **Warum:** Mehrere Agenten in einem geteilten Working-Tree (`/home/dev/projects/<repo>`)
+  überschreiben sich gegenseitig Files, weil `git checkout` die getrackten Files
+  einer Branch durch eine andere ersetzt. Tests mit unconditional-`rm`-Cleanup löschen
+  State, den ein parallel laufender Agent gerade geschrieben hat. Die Race-Conditions
+  sind nicht reproduzierbar in Test-Suites, weil sie vom Laufzeit-Scheduling der
+  Sessions abhängen.
+
+  **Inzident (Mai 2026):** Während T-001 / T-002 / T-003 im selben Repo
+  parallel liefen, wurden mid-edit Files mehrfach geclobbert. T-003
+  (worktree-architecture) wurde geboren als die Beobachtung sich einer
+  Diagnose nicht mehr entziehen ließ — und musste das eigene Pattern
+  benutzen, um sich selbst zu shippen (Final-Commit aus isoliertem
+  Worktree, dokumentiert im T-003 PR-Body).
+
+  **Industrie-Stand (2026):** Augment Code, MindStudio und das pnpm-
+  Build-System nutzen seit 2026 separate Worktrees als Standard für
+  parallele Agent-Workflows. Das bbe-worktree-toolkit formalisiert das
+  Pattern als Server-Setup; diese Doctrine-Regel macht es im Repo
+  verbindlich.
+
+  **enforcement-Pfad:**
+  - `doctrine_hard_block` ab Toolkit v0.1.0.
+  - Solo-Sprint-Ausnahme: ein Sprint mit genau 1 Agent und 1 Branch
+    kann via `doctrine_exempt: solo_sprint` im PR-Body umgangen werden.
+    Dokumentationspflicht im RESULT.decisions_made.
+
+  **Was passiert ohne Regel:** Race-Conditions bei jedem Multi-Agent-
+  Sprint, mit Datenverlust (geclobberte Edits, gelöschte State-Dateien)
+  und nicht-reproduzierbaren Diagnose-Sitzungen.
+
+  <!-- >>> bbe-worktree-toolkit T-030 END — RATIONALE anchor <<< -->
