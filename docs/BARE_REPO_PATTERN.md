@@ -1,9 +1,10 @@
 # BARE_REPO_PATTERN — sibling layout vs bare-repo layout
 
-The bbe-worktree-toolkit ships **sibling layout** in v0.1.0: one regular
-git repository alongside its worktree base directory. v0.2.0 will
-support **bare-repo layout** as a first-class option. This document
-explains both, when to pick which, and what the migration costs.
+The bbe-worktree-toolkit ships **sibling layout** as the v0.1.x
+default; **bare-repo layout** is a first-class option since v0.2.0
+(`install.sh --layout bare`, with auto-detection by default). This
+document explains both, when to pick which, and what the migration
+costs.
 
 ## The two layouts at a glance
 

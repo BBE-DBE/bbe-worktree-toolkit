@@ -1,17 +1,23 @@
 #!/usr/bin/env bash
-# migrate-to-bare.sh — convert a sibling-layout repo (toolkit v0.1.0
-# install) into a bare-repo layout (v0.2.0 target). Five stages with
-# explicit dry-run / execute boundaries.
+# migrate-to-bare.sh — convert a sibling-layout repo (v0.1.x toolkit
+# install) into a bare-repo layout. Five stages with explicit dry-run
+# vs. execute boundaries.
 #
-# v0.1.1 ships this as a SKELETON. The --execute path is real but
-# gated behind --i-understand-the-risk (or WTT_MIGRATE_CONFIRM=1).
-# Default behaviour is dry-run. See docs/MIGRATION.md for the full
-# walkthrough and rollback path.
+# v0.1.1 was the skeleton; v0.2.0 promotes bare-mode to first-class in
+# install.sh and the lifecycle templates. The migration script itself
+# keeps the same five stages and the same --i-understand-the-risk
+# gate. The v0.1.1 docstring claimed the gate would be removed in
+# v0.2.0; v0.2.0 keeps it deliberately because the migration is
+# irreversible (.git is rewritten, sibling-layout worktrees are
+# detached) and a typo on a production repo is unrecoverable. The
+# safety > convenience trade-off is documented as a v0.2.0 soft-
+# decision in CHANGELOG.md.
 #
 # License: MIT.
 set -euo pipefail
 
-VERSION="0.1.1"
+VERSION_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/VERSION"
+VERSION="$(cat "$VERSION_FILE" 2>/dev/null || printf '0.0.0')"
 
 usage() {
   cat >&2 <<'EOF'
@@ -19,8 +25,10 @@ Usage: migrate-to-bare.sh [options]
 
 Default mode is --dry-run: prints the plan, makes no changes.
 --execute applies the migration only when paired with
---i-understand-the-risk (or env WTT_MIGRATE_CONFIRM=1). v0.1.1's
-skeleton requires this double-confirmation; v0.2.0 will drop it.
+--i-understand-the-risk (or env WTT_MIGRATE_CONFIRM=1). v0.2.0
+keeps this double-confirmation deliberately — the migration is
+irreversible at the .git-layout level and a typo on a production
+repo is unrecoverable. See CHANGELOG.md (v0.2.0) for rationale.
 
 Options:
   --dry-run              Default. Print plan, no changes.
@@ -107,7 +115,7 @@ done
 
 # Enforce double-confirmation for --execute.
 if [[ "$dry_run" -eq 0 && "$risk_confirmed" -ne 1 ]]; then
-  die 2 "--execute requires --i-understand-the-risk (or WTT_MIGRATE_CONFIRM=1). v0.1.1 is a skeleton; this gate goes away in v0.2.0."
+  die 2 "--execute requires --i-understand-the-risk (or WTT_MIGRATE_CONFIRM=1). The migration is irreversible; v0.2.0 keeps this gate deliberately."
 fi
 
 # ---- prerequisites ----------------------------------------------------------
@@ -251,8 +259,10 @@ stage_convert() {
   # creating the new main/ worktree. Original files (which may carry
   # uncommitted changes) land under the backup dir; the operator can
   # rsync them back over main/ post-migration to restore uncommitted
-  # state. v0.2.0 will automate the restore step; v0.1.1's skeleton
-  # documents this in docs/MIGRATION.md.
+  # state. v0.2.0 keeps this manual restore step intentional — an
+  # automated rsync could silently overwrite a freshly checked-out
+  # main with stale uncommitted edits. docs/MIGRATION.md walks the
+  # one-line restore command.
   do_or_show "mkdir -p '$backup_dir/main-working'"
   do_or_show "find '$main_repo' -mindepth 1 -maxdepth 1 -not -name '.bare' -not -name '.bbe-worktree-toolkit-backup' -not -name '.git' -exec mv {} '$backup_dir/main-working/' \\;"
   # Replace main repo's .git dir with a pointer file.

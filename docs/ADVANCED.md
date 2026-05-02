@@ -4,26 +4,79 @@ This document collects patterns that aren't needed for first-time
 installation but become relevant as the toolkit gets used in larger
 projects.
 
-## Bare-repo layout (planned, v0.2.0)
+## Bare-repo layout (v0.2.0, first-class)
 
 A bare git repo is the cleanest way to host many worktrees: no "main"
 working tree to be confused with the worktree base, every worktree is
-peer to every other. Roughly:
+peer to every other. v0.2.0 makes this layout a first-class option in
+`install.sh` alongside the v0.1.x sibling layout.
+
+The on-disk shape:
 
 ```
 ~/projects/
-  myrepo.git/                  # bare clone
-  myrepo-worktrees/
+  myrepo/
+    .bare/                     # bare clone (the "git database")
+    .git                       # pointer file: gitdir: ./.bare
     main/                      # worktree on main branch
-    track_a-T-001/
-    track_b-T-001/
+    track_a-T-001/             # worktree, peer of main
+    track_b-T-001/             # worktree, peer of main
 ```
 
-The toolkit's v0.1.0 install assumes a regular (non-bare) repo. v0.2.0
-will detect a bare repo and write a `bare_layout.yaml` variant. Until
-then, run `git clone --bare` followed by manual `git worktree add main`
-in `<repo>-worktrees/main` to bootstrap, then `install.sh --layout-dir
-.worktrees` from inside `<repo>-worktrees/main`.
+Compare with sibling:
+
+```
+~/projects/
+  myrepo/                      # regular checkout
+    .git/                      # standard git directory
+  myrepo-worktrees/
+    track_a-T-001/             # worktree
+    track_b-T-001/             # worktree
+```
+
+### Auto-detection
+
+Run `install.sh` from anywhere inside the repo and it picks the right
+mode:
+
+```bash
+cd ~/projects/myrepo            # sibling root, or
+cd ~/projects/myrepo/main       # bare root → main worktree
+~/.bbe-worktree-toolkit/install.sh
+```
+
+The layout YAML's `layout_mode` field records the decision so the
+lifecycle scripts behave consistently from any worktree. The
+`worktree-status.sh --info` subcommand reports the resolved mode:
+
+```bash
+$ .worktrees/scripts/worktree-status.sh --info
+{"layout_mode":"bare","layout_file":"...","main_root":"..."}
+```
+
+### Forcing a mode
+
+```bash
+~/.bbe-worktree-toolkit/install.sh --layout sibling   # always sibling
+~/.bbe-worktree-toolkit/install.sh --layout bare      # requires bare
+~/.bbe-worktree-toolkit/install.sh --layout auto      # default
+```
+
+`--layout bare` on a non-bare repo exits 1 and points at
+`scripts/migrate-to-bare.sh` for conversion. See
+[`docs/MIGRATION.md`](MIGRATION.md) for the migration walkthrough.
+
+### Why bare layout
+
+- **No primary checkout.** `main/` is just another worktree; nothing
+  is "the repo". Useful when most work happens in feature worktrees
+  and `main/` is only ever read.
+- **Disk locality.** All worktrees live under one directory, so
+  `~/projects/myrepo/` is a complete picture of the repo's state.
+- **Safer cleanup.** A defensive guard in
+  `worktree-cleanup.sh` (v0.2.0+) refuses to remove worktrees on
+  `main` or `master`, so cleanup-from-feature-worktree cannot
+  accidentally drop the primary checkout.
 
 ## CI gating with `--check`
 

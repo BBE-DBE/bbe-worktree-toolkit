@@ -141,10 +141,20 @@ nested `.bare/` directory. See
 comparison and trade-offs.
 
 This section documents the migration path from sibling layout
-(v0.1.0 install) to bare-repo layout. The toolkit ships
-`scripts/migrate-to-bare.sh` to automate the steps. v0.1.1 ships it
-as a conservative skeleton — read this section first, then run the
-script.
+(v0.1.x install) to bare-repo layout. The toolkit ships
+`scripts/migrate-to-bare.sh` to automate the steps.
+
+**Status (v0.2.0):** the migration script is the supported path to
+move a sibling-layout repo to bare layout. The
+`--i-understand-the-risk` gate is **deliberately retained** in
+v0.2.0 — the v0.1.1 changelog announced its removal, but the
+migration is irreversible at the `.git`-layout level and a typo on
+a production repo is unrecoverable. CI environments that need an
+unattended migration set `WTT_MIGRATE_CONFIRM=1`.
+
+After migration, run `install.sh --layout bare` (or the default
+`--layout auto`, which detects the new layout) to refresh the
+templates with bare-mode awareness.
 
 ### What the migration does, conceptually
 

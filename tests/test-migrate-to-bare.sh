@@ -126,9 +126,10 @@ check_skip_backup_flag() {
 }
 
 check_version_flag() {
-  local v
+  local v expected
   v="$(bash "$migrate_script" --version)"
-  [[ "$v" == "0.1.1" ]]
+  expected="$(cat "$toolkit_dir/VERSION")"
+  [[ "$v" == "$expected" ]]
 }
 
 # ----------------------------------------------------------------------------
@@ -138,6 +139,6 @@ check "--execute without confirmation exits 2"             check_execute_without
 check "--execute --i-understand-the-risk creates .bare/"   check_execute_with_confirmation_creates_bare_layout
 check "second run detects already-migrated and exits 0"    check_idempotent_after_migration
 check "--skip-backup honors stage-skip flags"              check_skip_backup_flag
-check "--version reports 0.1.1"                            check_version_flag
+check "--version reports toolkit VERSION"                  check_version_flag
 
 exit "$failures"

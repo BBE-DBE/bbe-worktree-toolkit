@@ -5,7 +5,8 @@ agent-friendly workspace using **per-agent git worktrees**. Generalises
 the pattern that emerged from BBE-DBE's `bbe-coord` T-003 sprint into
 a portable toolkit any project can install.
 
-> **Status:** v0.1.0 (initial release). License: MIT.
+> **Status:** v0.2.0 — bare-repo layout is now first-class.
+> License: MIT.
 
 ## Why
 
@@ -48,6 +49,28 @@ For a different layout dir (e.g. bbe-coord uses `.bbe-coord/`):
 ```bash
 ~/.bbe-worktree-toolkit/install.sh --layout-dir .bbe-coord
 ```
+
+### Bare-repo layout (v0.2.0+)
+
+The toolkit now supports two layouts:
+
+| Mode | Disk shape | When to pick |
+|---|---|---|
+| **sibling** (default) | `<repo>/.git` is a regular checkout; worktrees live at `<parent>/<repo>-worktrees/<track>-<task_id>/` | Existing repos, ad-hoc setups, simplest mental model |
+| **bare** | `<repo>/.bare/` is the bare clone; `<repo>/.git` is a pointer file; every worktree (including `main/`) is a peer at `<repo>/<rel>/` | Many parallel worktrees, no distinguished "primary" checkout |
+
+Auto-detection is the default: install.sh inspects the target repo
+and picks the right mode. To force one or the other:
+
+```bash
+~/.bbe-worktree-toolkit/install.sh --layout sibling
+~/.bbe-worktree-toolkit/install.sh --layout bare      # requires the
+                                                      # repo to already
+                                                      # be in bare layout
+```
+
+To convert a sibling repo to bare layout, use
+`scripts/migrate-to-bare.sh` (see [`docs/MIGRATION.md`](docs/MIGRATION.md)).
 
 ## Daily use
 
